@@ -129,7 +129,10 @@ docs: build_tools embed_readme_inputs embed_readme_outputs embed_readme_processo
 
 .PHONY: build
 build:
+	# Build for local OS
 	CGO_ENABLED=0 go build -tags "$(BUILDTAGS)" -ldflags "$(LDFLAGS)" ./cmd/telegraf
+    # Build for linux x86 (PC/PE)
+	#env GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -tags "$(BUILDTAGS)" -ldflags "$(LDFLAGS)" ./cmd/telegraf
 
 .PHONY: telegraf
 telegraf: build

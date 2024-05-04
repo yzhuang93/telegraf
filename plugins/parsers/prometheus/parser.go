@@ -40,6 +40,19 @@ func (p *Parser) Parse(data []byte) ([]telegraf.Metric, error) {
 	case expfmt.TypeUnknown:
 		p.Log.Debugf("Unknown format %q... Trying to continue...", p.Header.Get("Content-Type"))
 	}
+
+	// Change the info type to gauge type to fit into prometheus format
+	toReplace := [][][]byte{
+		{[]byte("# TYPE target info"), []byte("# TYPE target_info gauge")},
+		{[]byte("# HELP target Target metadata"), []byte("# HELP target_info Target metadata")},
+		{[]byte("# TYPE otel_scope_info info"), []byte("# TYPE otel_scope_info gauge")},
+	}
+	for _, item := range toReplace {
+		data = bytes.Replace(data, item[0], item[1], 1)
+	}
+	// Remove duplicate type
+	data = bytes.ReplaceAll(data,[]byte("# TYPE otel_scope_info info\n# HELP otel_scope_info Scope metadata\n"), []byte{})
+
 	buf := bytes.NewBuffer(data)
 	decoder := expfmt.NewDecoder(buf, format)
 
